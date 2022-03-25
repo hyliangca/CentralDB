@@ -187,8 +187,8 @@ function Write-Log {
                     Param(
                             [Parameter(ValueFromPipeline=$true,Mandatory=$true)] [ValidateNotNullOrEmpty()]
                             [string] $Message,
-                            [Parameter()] [ValidateSet(“Error”, “Warn”, “Info”)]
-                            [string] $Level = “Info”,
+                            [Parameter()] [ValidateSet("Error","Warn","Info")]
+                            [string] $Level = "Info",
                             [Parameter()]
                             [Switch] $NoConsoleOut,
                             [Parameter()]
@@ -196,7 +196,7 @@ function Write-Log {
                             [Parameter()] [ValidateRange(1,30)]
                             [Int16] $Indent = 0,     
                             [Parameter()]
-                            [IO.FileInfo] $Path = ”$env:temp\PowerShellLog.txt”,                           
+                            [IO.FileInfo] $Path = "�$env:temp\PowerShellLog.txt",                          
                             [Parameter()]
                             [Switch] $Clobber,                          
                             [Parameter()]
@@ -212,7 +212,8 @@ function Write-Log {
             Begin {}
             Process {
                     try {                  
-                            $msg = '{0}{1} : {2} : {3}' -f (" " * $Indent), (Get-Date -Format “yyyy-MM-dd HH:mm:ss”), $Level.ToUpper(), $Message                           
+                            $msg = '{0}{1} : {2} : {3}' -f (" " * $Indent), (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Level.ToUpper(), $Message   
+                                                 
                             if ($NoConsoleOut -eq $false) {
                                     switch ($Level) {
                                             'Error' { Write-Error $Message }
@@ -238,14 +239,17 @@ function Write-Log {
                                 $log.set_log($EventLogName)  
                                 $log.set_source($EventSource)                       
                                     switch ($Level) {
-                                            “Error” { $log.WriteEntry($Message, 'Error', $EventID) }
-                                            “Warn”  { $log.WriteEntry($Message, 'Warning', $EventID) }
-                                            “Info”  { $log.WriteEntry($Message, 'Information', $EventID) }
+                                            "Error" {$log.WriteEntry($Message, 'Error', $EventID)}
+                                            "Warn"  {$log.WriteEntry($Message, 'Warning', $EventID) }
+                                            "Info"  {$log.WriteEntry($Message, 'Information', $EventID)}
                                     }
                             }
+                    #} catch {
+                    #        throw "Failed to create log entry in: '$Path'. The error was: '$_'. "
                     } catch {
-                            throw “Failed to create log entry in: ‘$Path’. The error was: ‘$_’.”
+                            throw "Failed to create log entry in: '$Path'. The error was: '$_'."
                     }
+                    
             }    
             End {}    
             <#
@@ -351,7 +355,7 @@ try
 function GetServerListInfo($svr, $inst) {
 # Create an ADO.Net connection to the instance
 $cn = new-object system.data.SqlClient.SqlConnection("Data Source=$inst;Integrated Security=SSPI;Initial Catalog=master");
-$s = new-object (‘Microsoft.SqlServer.Management.Smo.Server’) $cn
+$s = new-object ('Microsoft.SqlServer.Management.Smo.Server') $cn
 $RunDt = Get-Date -format G
 
 ############################################## Operating System Info #################################################################
@@ -366,7 +370,7 @@ $CITbl="[Svr].[OSInfo]"
 $a=Get-WmiObject -ComputerName $svr -Class Win32_OperatingSystem
 $b = $a.convertToDateTime($a.Lastbootuptime)
 [TimeSpan]$LastBoot = New-TimeSpan $b $(Get-Date)
-$OSUpTime = (‘{0} Days, {1} Hrs’ -f $LastBoot.Days,$lastboot.Hours) 
+$OSUpTime = ('{0} Days, {1} Hrs' -f $LastBoot.Days,$lastboot.Hours) 
 if($a.Caption -Like '*XP*'){$OSName = 'Windows XP'} elseif($a.Caption -Like '*2003*'){$OSName = 'Windows Server 2003'} elseif($a.Caption -Like '*2008 R2*'){$OSName = 'Windows Server 2008 R2'}
 elseif($a.Caption  -Like '*2008*'){$OSName = 'Windows Server 2008'} elseif($a.Caption -Like '*2012 R2*'){$OSName = 'Windows Server 2012 R2'} elseif($a.Caption -Like '*2012*'){$OSName = 'Windows Server 2012'} 
 elseif($a.Caption -Like '*Windows 8.1*'){$OSName = 'Windows 8.1'} elseif($a.Caption -Like '*Windows 8*'){$OSName = 'Windows 8'} elseif($a.Caption -Like '*Windows 10*'){$OSName = 'Windows 10'} 
@@ -436,20 +440,20 @@ $ip = (Test-Connection $svr -count 1).IPV4Address.ToString()
 #http://support.microsoft.com/kb/932370
 #MemberRole: http://itknowledgeexchange.techtarget.com/powershell/computer-roles/
 $domrole = DATA {
-ConvertFrom-StringData -StringData @’
+ConvertFrom-StringData -StringData @'
 0 = Standalone Workstation 
 1 = Member Workstation 
 2 = Standalone Server 
 3 = Member Server 
 4 = Backup Domain Controller 
 5 = Primary Domain Controller
-‘@
+'@
 }
 $dt=Get-WMIObject -query "select * from Win32_ComputerSystem" -computername $svr | select @{n="ServerName";e={$svr}}, @{n="IPAddress";e={$ip}}, Model, Manufacturer, Description, 
 	SystemType, @{n="ActiveNodeName";e={$_.DNSHostName.ToUpper()}}, Domain, @{n="DomainRole"; e={$domrole["$($_.DomainRole)"]}}, PartOfDomain, @{n="NumberofProcessors";e={$sockets}},
 	@{n="NumberofLogicalProcessors";e={$Logical}}, @{n="NumberofCores";e={$cores}}, @{n="IsHyperThreaded";e={if($cores -le $Logical) {'True'} Else {'False'}}}, 
 	@{n="CurrentCPUSpeed";e={$CurrentCPUSpeed}}, @{n="MaxCPUSpeed";e={$MaxCPUSpeed}}, @{n="IsPowerSavingModeON";e={if($CurrentCPUSpeed -ne $MaxCPUSpeed) {'True'} Else {'False'}}},
-	@{Expression={$_.TotalPhysicalMemory / 1GB};Label=”TotalPhysicalMemoryInGB”}, AutomaticManagedPagefile, @{n="IsVM";e={if($_.Model -Like '*Virtual*') {'True'} else {'False'}}},
+	@{Expression={$_.TotalPhysicalMemory/1GB};Label="�TotalPhysicalMemoryInGB"}, AutomaticManagedPagefile, @{n="IsVM";e={if($_.Model -Like '*Virtual*') {'True'} else {'False'}}},
 	@{n="IsClu";e={if ($Z | select PartComponent | where {$_ -like "*ClusSvc*"}) {'True'} else {'False'}}}, @{n="DateAdded";e={$RunDt}} | out-datatable
  Write-DataTable -ServerInstance $SQLInst -Database $Centraldb -TableName $CITbl -Data $dt
 }
@@ -468,9 +472,9 @@ try
 $ErrorActionPreference = "Stop"; #Make all errors terminating
 $CITbl="[Svr].[DiskInfo]"
 $dt=Get-WMIObject -query "select * from Win32_Volume where DriveType=3 and not name like '%?%'" -computername $svr |select @{n="ServerName";e={$svr}},
-	Name, Label, FileSystem, @{e={($_.BlockSize /1KB) -as [int]};n=”DskClusterSizeInKB”},  @{e={"{0:N2}" -f ($_.Capacity / 1GB)};n=”DskTotalSizeInGB”},  
-	@{e={"{0:N2}" -f ($_.Freespace /1GB)};n=”DskFreeSpaceInGB”}, @{e={"{0:N2}" -f (($_.Capacity-$_.Freespace) /1GB)};n=”DskUsedSpaceInGB”}, 
-	@{e={"{0:P2}" -f ($_.Freespace/$_.Capacity)};n=”DskPctFreeSpace”}, @{n="DateAdded";e={$RunDt}} | out-datatable
+	Name, Label, FileSystem, @{e={($_.BlockSize /1KB) -as [int]};n="�DskClusterSizeInKB"},  @{e={"{0:N2}" -f ($_.Capacity / 1GB)};n="�DskTotalSizeInGB"},  
+	@{e={"{0:N2}" -f ($_.Freespace /1GB)};n="�DskFreeSpaceInGB"}, @{e={"{0:N2}" -f (($_.Capacity-$_.Freespace) /1GB)};n="�DskUsedSpaceInGB"}, 
+	@{e={"{0:P2}" -f ($_.Freespace/$_.Capacity)};n="�DskPctFreeSpace"}, @{n="DateAdded";e={$RunDt}} | out-datatable
 Write-DataTable -ServerInstance $SQLInst -Database $Centraldb -TableName $CITbl -Data $dt
 }
 catch 
@@ -516,7 +520,7 @@ If ($responds) {
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = "[Inst].[InstanceInfo]”
+$CITbl = "[Inst].[InstanceInfo]"
 $s = new-object ('Microsoft.SqlServer.Management.Smo.Server') $inst
 $name = $inst.Split("\")
 if ($name.Length -eq 1) { $instname = "MSSQLSERVER" } else { $instname = $name[1]}
@@ -562,7 +566,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = "[Inst].[Jobs]”
+$CITbl = "[Inst].[Jobs]"
 $s = New-Object ('Microsoft.SqlServer.Management.Smo.Server') $inst
 $dbs=$s.jobserver.jobs
 $dt= $dbs | select @{n="ServerName";e={$svr}}, @{n="InstanceName";e={$inst}}, name, Description, OwnerLoginName, IsEnabled, 
@@ -584,7 +588,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = "[Inst].[JobsFailed]”
+$CITbl = "[Inst].[JobsFailed]"
 $s = New-Object ('Microsoft.SqlServer.Management.Smo.Server') $inst
 $jobserver = $s.JobServer
 $jobHistoryFilter = New-Object Microsoft.SqlServer.Management.Smo.Agent.JobHistoryFilter
@@ -606,7 +610,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = "[Inst].[Logins]”
+$CITbl = "[Inst].[Logins]"
 $s = New-Object ('Microsoft.SqlServer.Management.Smo.Server') $inst
 $dbs=$s.Logins
 $dt= $dbs | SELECT @{n="ServerName";e={$svr}}, @{n="InstanceName";e={$inst}}, Name, LoginType, CreateDate, DateLastModified, 
@@ -624,11 +628,11 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = “[Inst].[InstanceRoles]”
-$query =“select ('$Svr') as ServerName, ('$inst') as InstanceName, m.name as LoginName, r.name as RoleName, ('$RunDt') as DateAdded 
+$CITbl = "[Inst].[InstanceRoles]"
+$query ="select ('$Svr') as ServerName, ('$inst') as InstanceName, m.name as LoginName, r.name as RoleName, ('$RunDt') as DateAdded 
 	from sys.server_principals r
 	join sys.server_role_members rm on r.principal_id = rm.role_principal_id
-	join sys.server_principals m on m.principal_id = rm.member_principal_id”
+	join sys.server_principals m on m.principal_id = rm.member_principal_id"
 $da = new-object System.Data.SqlClient.SqlDataAdapter ($query, $cn)
 $dt = new-object System.Data.DataTable
 $da.fill($dt) | out-null
@@ -647,7 +651,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = "[Inst].[LinkedServers]”
+$CITbl = "[Inst].[LinkedServers]"
 $s = New-Object ('Microsoft.SqlServer.Management.Smo.Server') $inst
 $dbs=$s.linkedservers
 $dt= $dbs | SELECT @{n="ServerName";e={$svr}}, @{n="InstanceName";e={$inst}}, Name, ProviderName, ProductName, ProviderString, 
@@ -665,7 +669,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = "[Inst].[InsTriggers]”
+$CITbl = "[Inst].[InsTriggers]"
 $s = New-Object ('Microsoft.SqlServer.Management.Smo.Server') $inst
 	$dt = $s.Triggers | select @{n="ServerName";e={$svr}}, @{n="InstanceName";e={$inst}}, Name, createdate, datelastmodified, IsEnabled, @{n="DateAdded";e={$RunDt}} |out-datatable
 Write-DataTable -ServerInstance $SQLInst -Database $Centraldb -TableName $CITbl -Data $dt
@@ -685,7 +689,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = "[Inst].[Replication]”
+$CITbl = "[Inst].[Replication]"
 [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.SqlServer.RMO") | Out-Null
 $repsvr=New-Object "Microsoft.SqlServer.Replication.ReplicationServer" $inst
 
@@ -713,15 +717,15 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = "[DB].[DatabaseInfo]”
+$CITbl = "[DB].[DatabaseInfo]"
 $s = New-Object ('Microsoft.SqlServer.Management.Smo.Server') $inst
 #$dbs=$s.Databases
 foreach ($db in $s.Databases) {
 if ($db.IsAccessible -eq $True) {
 $dt= $db | Select @{n="ServerName";e={$svr}}, @{n="InstanceName";e={$inst}}, Name, Status, Owner, CreateDate, Size, 
 	@{n="DBSpaceAvailableInMB";e={[math]::round(($_.SpaceAvailable / 1024), 2)}},
-	@{e={"{0:N2}" -f ($_.Size-($_.SpaceAvailable / 1024))};n=”DBUsedSpaceInMB”}, 
-	@{e={"{0:P2}" -f (($_.SpaceAvailable / 1024)/$_.Size)};n=”DBPctFreeSpace”},
+	@{e={"{0:N2}" -f ($_.Size-($_.SpaceAvailable / 1024))};n="�DBUsedSpaceInMB"}, 
+	@{e={"{0:P2}" -f (($_.SpaceAvailable / 1024)/$_.Size)};n="�DBPctFreeSpace"},
 	@{n="DBDataSpaceUsageInMB";e={[math]::round(($_.DataSpaceUsage / 1024), 2)}},
 	@{n="DBIndexSpaceUsageInMB";e={[math]::round(($_.IndexSpaceUsage / 1024), 2)}},
 	ActiveConnections, Collation, RecoveryModel, CompatibilityLevel, PrimaryFilePath,
@@ -752,7 +756,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = “[DB].[AvailGroups]”
+$CITbl = "[DB].[AvailGroups]"
 $query= "IF SERVERPROPERTY ('IsHadrEnabled') = 1
 	BEGIN
 	Select ('$Svr') as ServerName, ('$inst') as InstanceName, Ag.name as AGName, AGS.Primary_Replica as PrimaryReplica, AGS.Synchronization_Health_desc as SyncHealth, 
@@ -782,7 +786,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = “[DB].[AvailDatabases]”
+$CITbl = "[DB].[AvailDatabases]"
 $query= "IF SERVERPROPERTY ('IsHadrEnabled') = 1
 		BEGIN
 		Select ('$Svr') as ServerName, ('$inst') as InstanceName, SD.name as AGDBName, AG.Name as AGName, AGS.Primary_Replica as PrimaryReplica, 
@@ -813,7 +817,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = “[DB].[AvailReplicas]”
+$CITbl = "[DB].[AvailReplicas]"
 $query= "IF SERVERPROPERTY ('IsHadrEnabled') = 1
 		BEGIN
 		Select  ('$Svr') as ServerName, ('$inst') as InstanceName, Ar.replica_server_name as ReplicaName, AG.name as AGName, ARS.Role_desc as Role,
@@ -844,7 +848,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = "[DB].[Triggers]”
+$CITbl = "[DB].[Triggers]"
 $s = New-Object ('Microsoft.SqlServer.Management.Smo.Server') $inst
 foreach ($db in $s.Databases) {
 if ($db.IsAccessible -eq $True) {
@@ -865,7 +869,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = “[DB].[DBUserRoles]”
+$CITbl = "[DB].[DBUserRoles]"
 $query= "declare @db varchar(200), @sqlstmt nvarchar(4000)
     	SET NOCOUNT ON   
     	create table ##dbroles(
@@ -904,7 +908,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = “[DB].[DatabaseFiles]”
+$CITbl = "[DB].[DatabaseFiles]"
 $query= "select ('$Svr') as ServerName, ('$inst') as InstanceName, DB_Name(database_id) as DBName, file_id, type_desc, name as LogicalName, physical_name, (size)*8/1024 as SizeInMB
         ,case (is_percent_growth) WHEN 1 THEN growth ELSE 0 END  as GrowthPct
         ,case (is_percent_growth) WHEN 0 THEN growth*8/1024 ELSE 0 END  as GrowthInMB, ('$RunDt') as DateAdded
@@ -928,7 +932,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = “[DB].[DBFileGrowth]”
+$CITbl = "[DB].[DBFileGrowth]"
 $query= "select ('$Svr') as ServerName, ('$inst') as InstanceName, DB_Name(database_id) as DBName, SUM(case when type_desc = 'ROWS' then ((size)*8/1024) else 0 end) as DataFileInMB
     , SUM(case when type_desc = 'LOG' then ((size)*8/1024) else 0 end) as LogFileInMB, ('$RunDt') as DateAdded
         from sys.master_files
@@ -952,7 +956,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = “[Tbl].[TblPermissions]”
+$CITbl = "[Tbl].[TblPermissions]"
 $query= "declare @db varchar(200), @sqlstmt nvarchar(4000)
     		SET NOCOUNT ON   
     		create table #tmpuserperm(DBName SYSNAME, UserName nvarchar(128), ClassDesc nvarchar(60),
@@ -992,7 +996,7 @@ catch
 try 
 {
 $ErrorActionPreference = "Stop"; #Make all errors terminating
-$CITbl = “[Tbl].[HekatonTbls]”
+$CITbl = "[Tbl].[HekatonTbls]"
 $query= "IF SERVERPROPERTY ('IsXTPSupported') = 1
 	BEGIN
 	declare @db varchar(200), @sqlstmt nvarchar(4000)
@@ -1155,18 +1159,28 @@ catch
 }  
 #GetServerListInfo -ErrorAction "SilentlyContinue" 
 ######################################################################################################################################
-$cn = new-object system.data.sqlclient.sqlconnection(“server=$SQLInst;database=$CentralDB;Integrated Security=true;”);
+$cn = new-object system.data.sqlclient.sqlconnection("server=$SQLInst;database=$CentralDB;Integrated Security=true;");
+
 $cn.Open()
 $cmd = $cn.CreateCommand()
 $query = "Select Distinct ServerName, InstanceName from [Svr].[ServerList] where Inventory='True';"
 $cmd.CommandText = $query
 #$null = $cmd.ExecuteNonQuery()
 $reader = $cmd.ExecuteReader()
+
+$reader | Out-String
+$reader.Read() | Out-String
+$reader['ServerName'] | Out-String
+write-log -Message "WWWorking on $server->$instance.." -Path C:\CentralDB\Errorlog\CentralInventorylog.log
+
 while($reader.Read()) {
  
    	# Get ServerName and InstanceName from CentralDB
 	$server = $reader['ServerName']
 	$instance = $reader['InstanceName']
+
+    write-log -Message "Working on $server->$instance.." -Path C:\CentralDB\Errorlog\CentralInventorylog.log
+
     	$result = gwmi -query "select StatusCode from Win32_PingStatus where Address = '$server'"
        	$responds = $false
 	# If the machine responds break out of the result loop and indicate success
@@ -1175,6 +1189,7 @@ while($reader.Read()) {
     	}
     	If ($responds) {
         # Calling funtion and passing server and instance parameters
+        write-log -Message "Working on $server->$instance.." -Path C:\CentralDB\Errorlog\CentralInventorylog.log
 		GetServerListInfo $server $instance
  
     	}
@@ -1185,7 +1200,7 @@ while($reader.Read()) {
  
 }
 ###################################################################Delete old data#################################################################
-$cn = new-object system.data.SqlClient.SqlConnection(“server=$SQLInst;database=$CentralDB;Integrated Security=true;”);
+$cn = new-object system.data.SqlClient.SqlConnection("server=$SQLInst;database=$CentralDB;Integrated Security=true;");
 $cn.Open()
 $cmd = $cn.CreateCommand()
 $q = "exec [dbo].[usp_DelData] 14, 365, 180, 365"
