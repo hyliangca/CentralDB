@@ -3053,7 +3053,7 @@ IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 END
 
 DECLARE @jobId BINARY(16)
-DECLARE @CommandString VARCHAR(40) = N'$(CENTRALDBFOLDER)' + N'\BaselineStats.ps1'
+DECLARE @CommandString VARCHAR(100) = N'$(CENTRALDBFOLDER)' + N'\BaselineStats.ps1'
 -- print @CommandString
 
 EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'CentralDB: Baseline Stats', 
@@ -3124,7 +3124,7 @@ IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 END
 
 DECLARE @jobId BINARY(16)
-DECLARE @CommandString VARCHAR(40) = N'$(CENTRALDBFOLDER)' + N'\SQLPing.ps1'
+DECLARE @CommandString VARCHAR(100) = N'$(CENTRALDBFOLDER)' + N'\SQLPing.ps1'
 EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'CentralDB: Server Ping Status', 
 		@enabled=1, 
 		@notify_level_eventlog=0, 
@@ -3192,7 +3192,7 @@ IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 END
 
 DECLARE @jobId BINARY(16)
-DECLARE @CommandString VARCHAR(40) = N'$(CENTRALDBFOLDER)' + N'\CentralInventory.ps1'
+DECLARE @CommandString VARCHAR(100) = N'$(CENTRALDBFOLDER)' + N'\CentralInventory.ps1'
 EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'CentralDB: SQL Server Inventory', 
 		@enabled=1, 
 		@notify_level_eventlog=0, 
@@ -3260,7 +3260,7 @@ IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 END
 
 DECLARE @jobId BINARY(16)
-DECLARE @CommandString VARCHAR(40) = N'$(CENTRALDBFOLDER)' + N'\WaitStats.ps1'
+DECLARE @CommandString VARCHAR(100) = N'$(CENTRALDBFOLDER)' + N'\WaitStats.ps1'
 EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'CentralDB: Wait Stats', 
 		@enabled=1, 
 		@notify_level_eventlog=0, 
