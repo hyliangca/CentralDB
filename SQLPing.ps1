@@ -6,7 +6,7 @@ param(
 [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.ConnectionInfo') | out-null
 [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SqlWmiManagement') | out-null
 
-$cn = new-object system.data.sqlclient.sqlconnection(“server=$SQLInst;database=$CentralDB;Integrated Security=true;”);
+$cn = new-object system.data.sqlclient.sqlconnection("server=$SQLInst;database=$CentralDB;Integrated Security=true;");
 $cn.Open()
 $cmd = $cn.CreateCommand()
 # Fetch Server list into the Data source from Srv.ServerList Table from CentralDB
